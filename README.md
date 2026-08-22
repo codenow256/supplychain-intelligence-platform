@@ -1,2 +1,3 @@
 # supplychain-intelligence-platform
 Supply chain intelligence platform for bottleneck detection and inventory optimization.
+Welcome goutam...
