@@ -10,6 +10,10 @@ app.use(express.json());
 
 connectDB();
 
+const productRoutes = require("./routes/productRoutes");
+
+app.use("/api/products", productRoutes);
+
 const PORT = process.env.PORT || 5000;
 
 app.get("/", (req, res) => {
