@@ -11,7 +11,7 @@
 - MongoDB Atlas project created
 - MongoDB Atlas cluster created
 - IP access configured
-- Database user configured
+- Database user configuredcd src
 - Environment variables configured
 - MongoDB connection code created
 - Initial API endpoint created

@@ -11,8 +11,20 @@ app.use(express.json());
 connectDB();
 
 const productRoutes = require("./routes/productRoutes");
+const supplierRoutes = require("./routes/supplierRoutes");
+const warehouseRoutes = require("./routes/warehouseRoutes");
+const inventoryRoutes = require("./routes/inventoryRoutes");
+const orderRoutes = require("./routes/orderRoutes");
+const shipmentRoutes = require("./routes/shipmentRoutes");
+const inventoryTransactionRoutes = require("./routes/inventoryTransactionRoutes");
 
 app.use("/api/products", productRoutes);
+app.use("/api/suppliers", supplierRoutes);
+app.use("/api/warehouses", warehouseRoutes);
+app.use("/api/inventory", inventoryRoutes);
+app.use("/api/orders", orderRoutes);
+app.use("/api/shipments", shipmentRoutes);
+app.use("/api/inventory-transactions",inventoryTransactionRoutes);
 
 const PORT = process.env.PORT || 5000;
 
