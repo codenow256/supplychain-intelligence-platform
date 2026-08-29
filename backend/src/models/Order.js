@@ -1,5 +1,29 @@
 const mongoose = require("mongoose");
 
+const orderItemSchema = new mongoose.Schema(
+    {
+        productId: {
+            type: String,
+            required: true
+        },
+
+        quantity: {
+            type: Number,
+            required: true,
+            min: 1
+        },
+
+        unitPrice: {
+            type: Number,
+            required: true,
+            min: 0
+        }
+    },
+    {
+        _id: false
+    }
+);
+
 const orderSchema = new mongoose.Schema(
     {
         orderId: {
@@ -7,11 +31,6 @@ const orderSchema = new mongoose.Schema(
             required: true,
             unique: true,
             trim: true
-        },
-
-        productId: {
-            type: String,
-            required: true
         },
 
         supplierId: {
@@ -24,10 +43,15 @@ const orderSchema = new mongoose.Schema(
             required: true
         },
 
-        quantity: {
-            type: Number,
+        items: {
+            type: [orderItemSchema],
             required: true,
-            min: 1
+            validate: {
+                validator: function (items) {
+                    return items.length > 0;
+                },
+                message: "Order must contain at least one item"
+            }
         },
 
         orderDate: {
@@ -42,7 +66,12 @@ const orderSchema = new mongoose.Schema(
 
         status: {
             type: String,
-            enum: ["pending", "confirmed", "completed", "cancelled"],
+            enum: [
+                "pending",
+                "confirmed",
+                "completed",
+                "cancelled"
+            ],
             default: "pending"
         }
     },
