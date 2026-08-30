@@ -3,7 +3,8 @@ const mongoose = require("mongoose");
 const orderItemSchema = new mongoose.Schema(
     {
         productId: {
-            type: String,
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "Product",
             required: true
         },
 
@@ -34,12 +35,14 @@ const orderSchema = new mongoose.Schema(
         },
 
         supplierId: {
-            type: String,
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "Supplier",
             required: true
         },
 
         warehouseId: {
-            type: String,
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "Warehouse",
             required: true
         },
 

@@ -45,6 +45,11 @@ const inventoryTransactionSchema = new mongoose.Schema(
     }
 );
 
+inventoryTransactionSchema.index({
+    productId: 1,
+    warehouseId: 1
+});
+
 module.exports = mongoose.model(
     "InventoryTransaction",
     inventoryTransactionSchema

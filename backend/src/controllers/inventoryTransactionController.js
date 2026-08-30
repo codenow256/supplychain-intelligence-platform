@@ -107,11 +107,27 @@ const deleteTransaction = async (req, res) => {
     }
 };
 
+const getTransactionsByProductWarehouse = async (req, res) => {
+    try {
+        const transactions = await InventoryTransaction.find({
+            productId: req.params.productId,
+            warehouseId: req.params.warehouseId
+        });
+
+        res.status(200).json(transactions);
+
+    } catch (error) {
+        res.status(500).json({
+            message: error.message
+        });
+    }
+};
 
 module.exports = {
     createTransaction,
     getTransactions,
     getTransactionById,
     updateTransaction,
-    deleteTransaction
+    deleteTransaction,
+    getTransactionsByProductWarehouse
 };
