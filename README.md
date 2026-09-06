@@ -25,14 +25,14 @@ DAY 1 : 22 AUGUST 2026
 
 React → Express/Node.js → Mongoose → MongoDB Atlas
 
-## Planned Database Features
+## Planned Features
 
 - Data modelling
 - Embedding and referencing
 - CRUD operations
 - Schema validation
 - Indexing
-- Aggregation pipelines
+- Aggregation pipelines 
 - `$lookup`
 - `$unwind`
 - `$facet`
@@ -40,3 +40,4 @@ React → Express/Node.js → Mongoose → MongoDB Atlas
 - Query optimization
 - `explain()`
 - Bottleneck analysis
+- Add trace Cause and Impact tracer

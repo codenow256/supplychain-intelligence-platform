@@ -6,22 +6,22 @@ SupplyChainIQ — Supply Chain Bottleneck Detection and Inventory Optimization P
 
 Objective
 
-Build a MongoDB-based supply-chain intelligence platform that manages products, suppliers, warehouses, inventory, orders, shipments and inventory transactions, while demonstrating practical MongoDB capabilities for supply-chain analysis, bottleneck detection and inventory optimization.
+Build a supply-chain intelligence platform that manages products, suppliers, warehouses, inventory, orders, shipments and inventory transactions, while demonstrating practical MongoDB capabilities for supply-chain analysis, bottleneck detection and inventory optimization + extra Root and Cause Impact Tracer.
 
 Current Architecture
 
 Client / Postman
-       ↓
+↓
 Express.js Server
-       ↓
+↓
 Routes
-       ↓
+↓
 Controllers
-       ↓
+↓
 Mongoose Models
-       ↓
+↓
 MongoDB Atlas
-       ↓
+↓
 Collections + Indexes + Aggregation
 
 Core Collections
@@ -48,25 +48,26 @@ Core Data Relationships
 
 The relationships are represented using both MongoDB ObjectId references and application-level business IDs.
 
-                         SUPPLIER
-                            ↑
-                            │
+                     SUPPLIER
+                        ↑
+                        │
+
 PRODUCT ───────────────→ ORDER
-   │                       │
-   │                       ├──→ WAREHOUSE
-   │                       │
-   │                       └──→ items[]
-   │                              └──→ PRODUCT
-   │
-   └──────────────→ INVENTORY ←──────── WAREHOUSE
+│                       │
+│                       ├──→ WAREHOUSE
+│                       │
+│                       └──→ items[]
+│                              └──→ PRODUCT
+│
+└──────────────→ INVENTORY ←──────── WAREHOUSE
 
 ORDER
-  │
-  ↓
+│
+↓
 SHIPMENT
 
 PRODUCT + WAREHOUSE
-        ↓
+↓
 INVENTORY TRANSACTION
 
 Order Relationship Design
@@ -77,15 +78,15 @@ Order
 ├── supplierId → Supplier (ObjectId reference)
 ├── warehouseId → Warehouse (ObjectId reference)
 └── items[]
-      ├── productId → Product (ObjectId reference)
-      ├── quantity
-      └── unitPrice
+├── productId → Product (ObjectId reference)
+├── quantity
+└── unitPrice
 
 Inventory, Shipment and InventoryTransaction currently use business-level String IDs for their corresponding relationships.
 
 Functionalities
 
-1. Data Modelling — Embedding + Referencing
+Data Modelling — Embedding + Referencing
 
 Status: COMPLETED
 
@@ -109,9 +110,9 @@ Order
 ├── supplier reference
 ├── warehouse reference
 └── items[]
-      ├── product reference
-      ├── quantity
-      └── unitPrice
+├── product reference
+├── quantity
+└── unitPrice
 
 Reasoning
 
@@ -123,7 +124,7 @@ Demonstration
 
 MongoDB Atlas can be used to show the stored Order structure, while the API demonstrates retrieval of the Order and its related referenced documents using Mongoose populate().
 
-2. CRUD Operations
+CRUD Operations
 
 Status: COMPLETED / CORE APIs IMPLEMENTED
 
@@ -143,7 +144,7 @@ Product CRUD was implemented and tested through Postman.
 
 CRUD route/controller structures have also been established for the remaining core collections.
 
-3. Indexing + Query Optimization
+Indexing + Query Optimization
 
 Status: COMPLETED
 
@@ -152,8 +153,8 @@ Business Query
 Retrieve inventory transactions for a particular product at a particular warehouse.
 
 db.inventorytransactions.find({
-    productId: "P001",
-    warehouseId: "WH001"
+productId: "P001",
+warehouseId: "WH001"
 })
 
 Dataset
@@ -187,8 +188,8 @@ Compound Index
 Created:
 
 inventoryTransactionSchema.index({
-    productId: 1,
-    warehouseId: 1
+productId: 1,
+warehouseId: 1
 });
 
 After Index
@@ -237,25 +238,137 @@ GET /api/inventory-transactions/product/P001/warehouse/WH001
 
 and successfully tested through Postman.
 
-4. Aggregation & Analytical Processing
+Aggregation & Analytical Processing
 
-Status: IN PROGRESS
+Status: COMPLETED
 
-Initial aggregation pipeline tested using MongoDB:
+Implemented a reusable SupplyChainIQ analytics layer using MongoDB aggregation pipelines.
 
+Analytics capabilities implemented:
+
+Inventory Movement Analytics
+
+Groups historical InventoryTransaction data by Product + Warehouse.
+
+Calculates total IN quantity.
+
+Calculates total OUT quantity.
+
+Calculates net movement = totalIn - totalOut.
+
+Counts transaction events.
+
+Supports product, warehouse, type and date-range filters.
+
+Supports configurable sorting and result limits.
+
+Inventory Risk Analytics
+
+Uses the current Inventory collection.
+
+Compares current quantity against reorderLevel.
+
+Calculates stockGap and stockRatio.
+
+Classifies inventory into HIGH / MEDIUM / LOW risk.
+
+Supplier Performance Analytics
+
+Groups Orders by supplier.
+
+Calculates order count.
+
+Calculates total ordered quantity across embedded order items using $reduce.
+
+Counts completed and cancelled orders.
+
+Calculates completion rate.
+
+Shipment Performance Analytics
+
+Groups Shipments by supplier + warehouse.
+
+Calculates shipment count.
+
+Counts delivered, delayed and in-transit shipments.
+
+Calculates shipment delay rate.
+
+Warehouse Analytics
+
+Groups current Inventory by warehouse.
+
+Calculates product count and total units.
+
+Calculates total reorder units.
+
+Identifies low-stock products.
+
+Calculates low-stock percentage and stock gap.
+
+Backend structure:
+
+src/
+├── controllers/
+│   └── analyticsController.js
+├── routes/
+│   └── analyticsRoutes.js
+└── services/
+└── analytics/
+├── inventoryAnalytics.js
+├── supplierAnalytics.js
+├── shipmentAnalytics.js
+└── warehouseAnalytics.js
+
+Analytics API endpoints:
+
+GET /api/analytics/inventory/movement
+GET /api/analytics/inventory/risk
+GET /api/analytics/suppliers/performance
+GET /api/analytics/shipments/performance
+GET /api/analytics/warehouses
+
+MongoDB aggregation concepts demonstrated:
+
+$match
 $group
-   ↓
 $sum
-   ↓
+$cond
+$reduce
+$addFields
+$subtract
+$divide
+$multiply
 $sort
+$limit
+$project
 
-Initial objective:
+Validation:
 
-Calculate total inventory movement by product.
+Inventory movement analytics was independently verified against MongoDB for P006 + WH002:
 
-Next step is to convert the aggregation into a meaningful SupplyChainIQ analytical API and extend it toward inventory and supplier analysis.
+totalIn          = 179
+totalOut         = 674
+transactionCount = 47
+netMovement      = -495
 
-5. Multi-Document ACID Transactions
+The direct MongoDB aggregation produced the same values as the REST API.
+
+Important analytical distinction:
+
+InventoryTransaction represents historical inventory events, while Inventory represents the current inventory state. Historical negative net movement does not mean current inventory is negative; it means more OUT movement than IN movement occurred during the analyzed history.
+
+ADJUSTMENT transactions are not included in totalIn or totalOut because they represent inventory corrections rather than direct IN/OUT movement.
+
+Business purpose:
+
+The analytics layer transforms raw operational supply-chain data into business-level signals that support inventory risk analysis, supplier/shipment investigation and the later Root-Cause & Impact Tracer.
+
+Note:
+
+Date-range filtering is implemented. The next refinement is to make the end-date boundary explicitly inclusive for date-only inputs before relying on date-window analytics in production.
+
+Multi-Document ACID Transactions
 
 Status: UPCOMING
 
@@ -277,7 +390,7 @@ Atomicity
 
 Consistency
 
-6. Bulk Write Operations
+Bulk Write Operations
 
 Status: UPCOMING
 
@@ -295,7 +408,7 @@ Batch processing
 
 Reduced database round trips
 
-7. Advanced Filtering and Querying
+Advanced Filtering and Querying
 
 Status: UPCOMING
 
@@ -317,7 +430,7 @@ Shipment status
 
 Date ranges
 
-8. Pagination
+Pagination
 
 Status: UPCOMING
 
@@ -341,7 +454,7 @@ Page number
 
 Efficient large-result handling
 
-9. Text Search
+Text Search
 
 Status: UPCOMING
 
@@ -351,7 +464,7 @@ Example use case:
 
 Search products by name or relevant text fields.
 
-10. Geospatial Queries
+Geospatial Queries
 
 Status: UPCOMING
 
@@ -365,7 +478,7 @@ Find suppliers near a warehouse
 
 Analyze geographical supply-chain distribution
 
-11. MongoDB Views
+MongoDB Views
 
 Status: UPCOMING
 
@@ -375,7 +488,7 @@ Potential use case:
 
 Create a consolidated view combining inventory and product information for reporting.
 
-12. Change Streams
+Change Streams
 
 Status: UPCOMING
 
@@ -385,7 +498,7 @@ Potential use case:
 
 Monitor inventory changes and trigger application-level responses.
 
-13. Historical / Data Lifecycle Analysis
+Historical / Data Lifecycle Analysis
 
 Status: UPCOMING
 
@@ -461,7 +574,7 @@ COMPLETE
 
 Aggregation
 
-IN PROGRESS
+COMPLETE
 
 ACID Transactions
 
@@ -579,28 +692,76 @@ Query optimization
 
 Aggregation pipelines
 
+$match
+
 $group
 
 $sum
 
+$cond
+
+$reduce
+
+$addFields
+
+$subtract
+
+$divide
+
+$multiply
+
 $sort
+
+$limit
+
+$project
+
+Aggregation & Analytical Thinking
+
+Aggregation processes many MongoDB documents through ordered pipeline stages to produce derived business results.
+
+$match filters source documents before later processing.
+
+$group creates analytical groups using a grouping key such as Product + Warehouse.
+
+$sum can add quantities or count documents using $sum: 1.
+
+$cond provides conditional calculations such as separating IN and OUT quantities.
+
+$reduce processes embedded arrays such as Order.items to calculate total item quantity per order.
+
+$addFields creates derived metrics such as netMovement, stockGap and rates.
+
+$subtract, $divide and $multiply calculate business metrics inside the pipeline.
+
+$sort and $limit rank and restrict analytical results.
+
+$project controls the final API response shape.
+
+Filtering before grouping can reduce the amount of data later stages need to process.
+
+A reusable analytics API should expose validated business parameters rather than arbitrary MongoDB pipelines.
+
+Historical movement and current inventory state are different concepts and should be analyzed separately.
+
+Aggregation results should be independently validated against source data.
 
 Database Design Thinking
 
 Learned to approach database functionality through:
 
 Business Requirement
-        ↓
+↓
 Data Model
-        ↓
+↓
 Query / Operation
-        ↓
+↓
 Measure
-        ↓
+↓
 Optimize
-        ↓
+↓
 Verify
-        ↓
+↓
 Expose through API
 
 Team Development
