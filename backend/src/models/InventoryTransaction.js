@@ -25,6 +25,11 @@ const inventoryTransactionSchema = new mongoose.Schema(
             required: true
         },
 
+        adjustmentDirection: {
+            type: String,
+            enum: ["INCREASE", "DECREASE"]
+        },
+
         quantity: {
             type: Number,
             required: true,
