@@ -154,7 +154,7 @@ async function seedDemo() {
             {
                 productId: "P-DEMO-03",
                 warehouseId: DEMO.warehouse,
-                quantity: 30,
+                quantity: 10,
                 reorderLevel: 15
             }
         ]);
@@ -162,7 +162,7 @@ async function seedDemo() {
         console.log("Inventory created:");
         console.log("  P-DEMO-01 = 50");
         console.log("  P-DEMO-02 = 80");
-        console.log("  P-DEMO-03 = 30");
+        console.log("  P-DEMO-03 = 10");
 
         // =====================================================
         // 6. ORDER
@@ -325,7 +325,7 @@ async function seedDemo() {
         const expectedQuantities = {
             "P-DEMO-01": 50,
             "P-DEMO-02": 80,
-            "P-DEMO-03": 30
+            "P-DEMO-03": 10
         };
 
         for (const item of inventoryCheck) {
@@ -356,7 +356,7 @@ async function seedDemo() {
         console.log("\nBEFORE RECEIVE:");
         console.log("P-DEMO-01 -> 50");
         console.log("P-DEMO-02 -> 80");
-        console.log("P-DEMO-03 -> 30");
+        console.log("P-DEMO-03 -> 10");
 
         console.log("\nShipment status -> in_transit");
         console.log("Inventory transactions for this shipment -> 0");
