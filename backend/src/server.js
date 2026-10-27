@@ -18,6 +18,7 @@ const orderRoutes = require("./routes/orderRoutes");
 const shipmentRoutes = require("./routes/shipmentRoutes");
 const inventoryTransactionRoutes = require("./routes/inventoryTransactionRoutes");
 const analyticsRoutes = require("./routes/analyticsRoutes");
+const restockAlertRoutes = require("./routes/restockAlertRoutes");
 
 app.use("/api/products", productRoutes);
 app.use("/api/suppliers", supplierRoutes);
@@ -27,6 +28,7 @@ app.use("/api/orders", orderRoutes);
 app.use("/api/shipments", shipmentRoutes);
 app.use("/api/inventory-transactions",inventoryTransactionRoutes);
 app.use("/api/analytics",analyticsRoutes);
+app.use("/api/restock-alerts", restockAlertRoutes);
 
 const PORT = process.env.PORT || 5000;
 

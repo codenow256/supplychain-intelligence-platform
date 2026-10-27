@@ -275,6 +275,124 @@ const getLowStockView = async (req, res) => {
     }
 };
 
+
+const manageReorderThreshold = async (req, res) => {
+    try {
+        const { productId, warehouseId, operation, value } = req.body;
+
+        if (
+            !productId ||
+            !warehouseId ||
+            !Number.isFinite(value) ||
+            value < 0 ||
+            !["set", "increase"].includes(operation)
+        ) {
+            return res.status(400).json({
+                success: false,
+                message: "Provide productId, warehouseId, a non-negative numeric value, and operation: set or increase"
+            });
+        }
+
+        const update =
+            operation === "set"
+                ? { $set: { reorderLevel: value } }
+                : { $inc: { reorderLevel: value } };
+
+        const inventory = await Inventory.findOneAndUpdate(
+            { productId, warehouseId },
+            update,
+            { new: true, runValidators: true }
+        );
+
+        if (!inventory) {
+            return res.status(404).json({
+                success: false,
+                message: "Inventory record not found"
+            });
+        }
+
+        return res.status(200).json({
+            success: true,
+            message: "Reorder threshold updated successfully",
+            data: {
+                productId: inventory.productId,
+                warehouseId: inventory.warehouseId,
+                quantity: inventory.quantity,
+                reorderLevel: inventory.reorderLevel
+            }
+        });
+    } catch (error) {
+        return res.status(400).json({
+            success: false,
+            message: error.message
+        });
+    }
+};
+
+const deductStockSafely = async (req, res) => {
+    try {
+        const { productId, warehouseId, quantity } = req.body;
+
+        // Validate the request
+        if (
+            typeof productId !== "string" ||
+            !productId.trim() ||
+            typeof warehouseId !== "string" ||
+            !warehouseId.trim() ||
+            typeof quantity !== "number" ||
+            !Number.isFinite(quantity) ||
+            quantity <= 0
+        ) {
+            return res.status(400).json({
+                success: false,
+                message:
+                    "Provide productId, warehouseId, and a positive numeric quantity."
+            });
+        }
+
+        // Atomically check stock and deduct the requested quantity
+        const inventory = await Inventory.findOneAndUpdate(
+            {
+                productId: productId.trim(),
+                warehouseId: warehouseId.trim(),
+                quantity: { $gte: quantity }
+            },
+            {
+                $inc: { quantity: -quantity }
+            },
+            {
+                new: true,
+                runValidators: true
+            }
+        );
+
+        if (!inventory) {
+            return res.status(409).json({
+                success: false,
+                message:
+                    "Stock deduction failed: inventory was not found or available stock is insufficient."
+            });
+        }
+
+        return res.status(200).json({
+            success: true,
+            message: "Stock deducted successfully.",
+            data: {
+                productId: inventory.productId,
+                warehouseId: inventory.warehouseId,
+                deductedQuantity: quantity,
+                remainingStock: inventory.quantity
+            }
+        });
+    } catch (error) {
+        return res.status(500).json({
+            success: false,
+            message: "Unable to process stock deduction.",
+            error: error.message
+        });
+    }
+};
+
 module.exports = {
     createInventory,
     getInventory,
@@ -282,5 +400,8 @@ module.exports = {
     updateInventory,
     deleteInventory,
     batchAdjustInventory,
-    getLowStockView
+    getLowStockView,
+    manageReorderThreshold,
+    deductStockSafely 
 };
+
